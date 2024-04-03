@@ -1,3 +1,5 @@
+use std::panic::catch_unwind;
+
 use sp1_core::SP1Verifier;
 
 #[no_mangle]
@@ -7,10 +9,13 @@ pub extern "C" fn verify_sp1_proof_with_elf_ffi(
     proof_len: usize,
     elf_len: usize,
 ) -> bool {
-    let proof_buffer = unsafe { std::slice::from_raw_parts(proof_ptr, proof_len) };
-    let elf_buffer = unsafe { std::slice::from_raw_parts(elf_ptr, elf_len) };
+    catch_unwind(|| {
+        let proof_buffer = unsafe { std::slice::from_raw_parts(proof_ptr, proof_len) };
+        let elf_buffer = unsafe { std::slice::from_raw_parts(elf_ptr, elf_len) };
 
-    verify_sp1_proof_with_elf(proof_buffer, elf_buffer)
+        verify_sp1_proof_with_elf(proof_buffer, elf_buffer)
+    })
+    .unwrap_or(false)
 }
 
 fn verify_sp1_proof_with_elf(proof_buffer: &[u8], elf_buffer: &[u8]) -> bool {
