@@ -1,5 +1,5 @@
 APP=alignedlayerd
-CHAIN_ID=alignedlayer
+CHAIN_ID ?= alignedlayer-1
 
 generate:
 	$(APP) tx verification verify $(PROOF) \
