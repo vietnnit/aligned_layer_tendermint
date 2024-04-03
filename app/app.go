@@ -9,6 +9,9 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+
+	// import for side-effects
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -31,6 +34,10 @@ import (
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	_ "github.com/cosmos/cosmos-sdk/x/mint"     // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/slashing" // import for side-effects
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
@@ -38,6 +45,10 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
 	verifymodulekeeper "alignedlayer/x/verify/keeper"
+
+	_ "github.com/cosmos/cosmos-sdk/x/params" // import for side-effects
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"alignedlayer/docs"
@@ -75,8 +86,9 @@ type App struct {
 	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
-
-	VerifyKeeper verifymodulekeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
+	VerifyKeeper          verifymodulekeeper.Keeper
+	UpgradeKeeper         *upgradekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -92,6 +104,19 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 }
 
+// getGovProposalHandlers return the chain proposal handlers.
+func getGovProposalHandlers() []govclient.ProposalHandler {
+	var govProposalHandlers []govclient.ProposalHandler
+	// this line is used by starport scaffolding # stargate/app/govProposalHandlers
+
+	govProposalHandlers = append(govProposalHandlers,
+		paramsclient.ProposalHandler,
+		// this line is used by starport scaffolding # stargate/app/govProposalHandler
+	)
+
+	return govProposalHandlers
+}
+
 // AppConfig returns the default app config.
 func AppConfig() depinject.Config {
 	return depinject.Configs(
@@ -102,6 +127,7 @@ func AppConfig() depinject.Config {
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+				govtypes.ModuleName:     gov.NewAppModuleBasic(getGovProposalHandlers()),
 				// this line is used by starport scaffolding # stargate/appConfig/moduleBasic
 			},
 		),
@@ -184,7 +210,9 @@ func New(
 		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.SlashingKeeper,
+		&app.GovKeeper,
 		&app.VerifyKeeper,
+		&app.UpgradeKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)
