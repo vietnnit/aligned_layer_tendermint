@@ -35,6 +35,7 @@ Ignite CLI is used to generate boilerplate code for a Cosmos SDK application, ma
   - [Bank](#bank)
   - [Slashing](#slashing)
   - [Staking](#staking)
+- [Troubleshooting](#troubleshooting)
 - [Acknowledgements](#acknowledgements)
 
 ## Requirements
@@ -764,6 +765,21 @@ You can obtain your validator `valoperaddr` by doing:
 ```
 alignedlayerd keys show <account_name> --bech val --address
 ```
+
+## Troubleshooting
+
+### Error: `err="auth failure: secret conn failed..."`
+This error occurs when the node is unable to connect with other peers. 
+If you are having issues with the connection, try adding more peers
+using the following commands:
+    
+```sh
+peers=$(curl -s https://raw.githubusercontent.com/nodesynctop/Alignedlayer/main/peers.txt)
+sed -i.bak -e "s/^persistent_peers *=.*/persistent_peers = \"$peers\"/" $HOME/.alignedlayer/config/config.toml
+sudo systemctl restart <your-node-name> # if you are using systemd else restart the node manually
+```
+
+The system will remove the failing peers but not immediately.
 
 ## Acknowledgements 
 We are most grateful to [Cosmos SDK](https://github.com/cosmos/cosmos-sdk), [Ignite CLI](https://github.com/ignite/cli), [CometBFT](https://github.com/cometbft/cometbft) and Ping.pub for their [faucet](https://github.com/ping-pub/faucet) and [explorer](https://github.com/ping-pub/explorer).
