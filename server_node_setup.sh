@@ -53,6 +53,8 @@ echo "Sending directories to servers..."
 for i in "${!servers[@]}"; do  
     ssh ${servers[$i]} "rm -rf /home/admin/.alignedlayer"
     scp -r "prod-sim/${nodes[$i]}" "${servers[$i]}:/home/admin/.alignedlayer"
+    ssh ${servers[$i]} "rm -rf /home/admin/keys"
+    ssh ${servers[$i]} "mv /home/admin/.alignedlayer/keys /home/admin/keys"
 done
 
 
