@@ -148,10 +148,10 @@ bash send_sp1_tx.sh alice ./prover_examples/sp1/example/fibonacci.proof ./prover
 
 To create a SP1 proof, we can use the example in `prover_examples/sp1`
 
-First, we must define the program in `prover_examples/sp1/program/src/main.rs`. Then, we can run the prover in `prover_examples/sp1/src/main.rs`. 
+First, we must define the program in `prover_examples/sp1/program/src/main.rs`. Then, we can run the prover in `prover_examples/sp1/src/main.rs`. If we changed the inputs and outputs of the program, we must also change it in the prover. 
 
 ```sh
-cd prover_examples/sp1 && cargo run
+( cd prover_examples/sp1 && cargo run )
 ```
 
 This will generate the elf in `prover_examples/sp1/elf/riscv32im-succinct-zkvm-elf` and the proof in `prover_examples/sp1/program.proof`. Then, we can send it with:
