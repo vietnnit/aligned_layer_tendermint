@@ -35,6 +35,7 @@ Ignite CLI is used to generate boilerplate code for a Cosmos SDK application, ma
   - [Bank](#bank)
   - [Slashing](#slashing)
   - [Staking](#staking)
+- [Troubleshooting](#troubleshooting)
 - [Acknowledgements](#acknowledgements)
 
 ## Requirements
@@ -54,10 +55,12 @@ make run-linux
 
 This command installs dependencies, builds, initializes, and starts your blockchain in development.
 
+Before starting, you must define a chain-id, e.g. `export CHAIN_ID=alignedlayer-1`.
+
 You can try to send an example proof used in the repo with the following command:
 
 ```sh
-alignedlayerd tx verify gnark-plonk --from alice --chain-id alignedlayer \
+alignedlayerd tx verify gnark-plonk --from alice --chain-id $CHAIN_ID \
     $(cat ./prover_examples/gnark_plonk/example/proof.base64.example) \
     $(cat ./prover_examples/gnark_plonk/example/public_inputs.base64.example) \
     $(cat ./prover_examples/gnark_plonk/example/verifying_key.base64.example)
@@ -104,7 +107,7 @@ go run ./prover_examples/gnark_plonk/gnark_plonk.go
 This will compile the circuit and create a proof in the root folder that is ready to be sent with:
 
 ```sh
-alignedlayerd tx verify gnark-plonk --from alice --chain-id alignedlayer \
+alignedlayerd tx verify gnark-plonk --from alice --chain-id $CHAIN_ID \
     $(cat proof.base64) \
     $(cat public_inputs.base64) \
     $(cat verifying_key.base64)
@@ -170,7 +173,7 @@ To send a gnark-plonk proof to the blockchain, use:
 
 ```sh
 alignedlayerd tx verify gnark-plonk --from <your_key_name> \
-	--chain-id alignedlayer \
+	--chain-id $CHAIN_ID \
 	--node tcp://rpc-node.alignedlayer.com:26657 \
 	--fees 50stake \
 	$(cat ./prover_examples/gnark_plonk/example/proof.base64.example) \
@@ -206,6 +209,10 @@ export PEER_ADDR=91.107.239.79,116.203.81.174,88.99.174.203,128.140.3.188
 
 A list of our testnet public IP addresses can be found [below](#publicips).
 
+Also, you may set the CHAIN_ID env var if you will follow the manual steps. The current chain-id is `alignedlayer-1`:
+
+`export CHAIN_ID=alignedlayer-1`
+
 #### The fast way
 
 The fastest way to setup a new node is with our script. It receives the new node's moniker as argument:
@@ -240,7 +247,7 @@ alignedlayerd version
 
 To initialize the node, run
 ```sh
-alignedlayerd init <your-node-name> --chain-id alignedlayer
+alignedlayerd init <your-node-name> --chain-id $CHAIN_ID
 ```
 If you have already run this command, you can use the `-o` flag to overwrite previously generated files.
 
@@ -370,7 +377,7 @@ Now create the validator.json file:
 
 Now, run:
 ```sh
-alignedlayerd tx staking create-validator validator.json --from <account-name-or-address> --node tcp://$PEER_ADDR:26657 --fees 50stake --chain-id alignedlayer
+alignedlayerd tx staking create-validator validator.json --from <account-name-or-address> --node tcp://$PEER_ADDR:26657 --fees 50stake --chain-id $CHAIN_ID
 ```
 
 Check whether your validator was accepted with:
@@ -744,13 +751,13 @@ alignedlayerd query distribution slashes [validator-addr] [start-height] [end-he
 #### Sending Unjail Transaction
 To send a transaction to unjail yourself, after the JailPeriod, and thus rejoin the validator set:
 ```
-alignedlayerd tx slashing unjail --from <account_name> --chain-id alignedlayer --fees 20stake
+alignedlayerd tx slashing unjail --from <account_name> --chain-id $CHAIN_ID --fees 20stake
 ```
 
 ### Staking 
 You may stake additional tokens after registering your validator with the following command: 
 ```
-alignedlayerd tx staking delegate <valoperaddr> <amount> --from <account_name> --chain-id alignedlayer --fees 20stake
+alignedlayerd tx staking delegate <valoperaddr> <amount> --from <account_name> --chain-id $CHAIN_ID --fees 20stake
 ```
 
 You can obtain your validator `valoperaddr` by doing:
@@ -758,6 +765,21 @@ You can obtain your validator `valoperaddr` by doing:
 ```
 alignedlayerd keys show <account_name> --bech val --address
 ```
+
+## Troubleshooting
+
+### Error: `err="auth failure: secret conn failed..."`
+This error occurs when the node is unable to connect with other peers. 
+If you are having issues with the connection, try adding more peers
+using the following commands:
+    
+```sh
+peers=$(curl -s https://raw.githubusercontent.com/nodesynctop/Alignedlayer/main/peers.txt)
+sed -i.bak -e "s/^persistent_peers *=.*/persistent_peers = \"$peers\"/" $HOME/.alignedlayer/config/config.toml
+sudo systemctl restart <your-node-name> # if you are using systemd else restart the node manually
+```
+
+The system will remove the failing peers but not immediately.
 
 ## Acknowledgements 
 We are most grateful to [Cosmos SDK](https://github.com/cosmos/cosmos-sdk), [Ignite CLI](https://github.com/ignite/cli), [CometBFT](https://github.com/cometbft/cometbft) and Ping.pub for their [faucet](https://github.com/ping-pub/faucet) and [explorer](https://github.com/ping-pub/explorer).
