@@ -1,5 +1,5 @@
 {
-    "chain_name": "alignedlayer-1",
+    "chain_name": "alignedlayer",
     "api": [
         "https://api-node.alignedlayer.com"
     ],

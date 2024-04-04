@@ -10,7 +10,7 @@ fi
 
 NODE_HOME=$HOME/.alignedlayer
 CHAIN_BINARY=alignedlayerd
-: ${CHAIN_ID:="alignedlayer-1"}
+: ${CHAIN_ID:="alignedlayer"}
 
 : ${PEER_ADDR="91.107.239.79,116.203.81.174,88.99.174.203,128.140.3.188"}
 

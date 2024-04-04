@@ -55,7 +55,7 @@ make run-linux
 
 This command installs dependencies, builds, initializes, and starts your blockchain in development.
 
-Before starting, you must define a chain-id, e.g. `export CHAIN_ID=alignedlayer-1`.
+Before starting, you must define a chain-id, e.g. `export CHAIN_ID=alignedlayer`.
 
 You can try to send an example proof used in the repo with the following command:
 
@@ -209,9 +209,9 @@ export PEER_ADDR=91.107.239.79,116.203.81.174,88.99.174.203,128.140.3.188
 
 A list of our testnet public IP addresses can be found [below](#publicips).
 
-Also, you may set the CHAIN_ID env var if you will follow the manual steps. The current chain-id is `alignedlayer-1`:
+Also, you may set the CHAIN_ID env var if you will follow the manual steps. The current chain-id is `alignedlayer`:
 
-`export CHAIN_ID=alignedlayer-1`
+`export CHAIN_ID=alignedlayer`
 
 #### The fast way
 

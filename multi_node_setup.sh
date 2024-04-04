@@ -1,6 +1,6 @@
 #!/bin/bash
 
-: "${CHAIN_ID:=alignedlayer-1}"
+: "${CHAIN_ID:=alignedlayer}"
 : "${PASSWORD:=password}"
 : "${FAUCET_DIR:=./faucet}"
 token="stake"

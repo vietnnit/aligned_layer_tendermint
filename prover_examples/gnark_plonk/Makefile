@@ -1,7 +1,7 @@
 .PHONY: prove generate-proof send-proof query-tx clean
 
 BINARY ?= alignedlayerd
-CHAIN_ID ?= alignedlayer-1
+CHAIN_ID ?= alignedlayer
 MODULE ?= verify
 MESSAGE ?= gnark-plonk
 PROVER ?= gnark_plonk.go

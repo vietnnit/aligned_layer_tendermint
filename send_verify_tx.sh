@@ -12,7 +12,7 @@ else
   PROOF_FILE=$3
 fi
 
-: ${CHAIN_ID:="alignedlayer-1"}
+: ${CHAIN_ID:="alignedlayer"}
 
 : ${NODE:="tcp://localhost:26657"}
 : ${FEES:=2000stake}

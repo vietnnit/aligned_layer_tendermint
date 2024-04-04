@@ -21,7 +21,7 @@ export default {
     },
     blockchains: [
         {
-            name: process.env.CHAIN_ID ?? "alignedlayer-1",
+            name: process.env.CHAIN_ID ?? "alignedlayer",
             endpoint: {
                 // make sure that CORS is enabled in rpc section in config.toml
                 // cors_allowed_origins = ["*"]

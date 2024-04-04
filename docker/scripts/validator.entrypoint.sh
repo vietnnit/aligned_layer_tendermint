@@ -11,7 +11,7 @@ fi
 
 NODE_HOME=/root/.alignedlayer
 CHAIN_BINARY=alignedlayerd
-: ${CHAIN_ID:="alignedlayer-1"}
+: ${CHAIN_ID:="alignedlayer"}
 
 : ${PASSWORD:="password"}
 : ${FEES:="50stake"}

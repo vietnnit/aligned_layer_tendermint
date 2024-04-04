@@ -12,7 +12,7 @@ else
   ACCOUNT=$1
 fi
 
-: ${CHAIN_ID:="alignedlayer-1"}
+: ${CHAIN_ID:="alignedlayer"}
 
 # New elements can be added to the array to send more transactions
 PROOFS=(

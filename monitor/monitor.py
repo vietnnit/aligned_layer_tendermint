@@ -5,7 +5,7 @@ import sys
 from slack_sdk import WebhookClient
 
 SLACK_URL = os.environ["SLACK_URL"]
-CHAIN_ID = os.environ.get("CHAIN_ID", "alignedlayer-1")
+CHAIN_ID = os.environ.get("CHAIN_ID", "alignedlayer")
 
 FAUCET_URL = "http://faucet.alignedlayer.com/"
 
