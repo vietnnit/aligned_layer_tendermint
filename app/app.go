@@ -11,6 +11,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 
 	// import for side-effects
+	_ "cosmossdk.io/x/upgrade" // import for side-effects
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -87,8 +88,8 @@ type App struct {
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
 	GovKeeper             *govkeeper.Keeper
-	VerifyKeeper          verifymodulekeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
+	VerifyKeeper          verifymodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -211,8 +212,9 @@ func New(
 		&app.ConsensusParamsKeeper,
 		&app.SlashingKeeper,
 		&app.GovKeeper,
-		&app.VerifyKeeper,
 		&app.UpgradeKeeper,
+		&app.VerifyKeeper,
+
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)

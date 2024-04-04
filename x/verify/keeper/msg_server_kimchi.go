@@ -15,7 +15,7 @@ func (k msgServer) Kimchi(goCtx context.Context, msg *types.MsgKimchi) (*types.M
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	result := verifykim(msg.Proof)
-	event := sdk.NewEvent("verification_finished",
+	event := sdk.NewEvent("verification_finished_yayy",
 		sdk.NewAttribute("proof_verifies", strconv.FormatBool(result)),
 		sdk.NewAttribute("prover", "KIMCHI"))
 

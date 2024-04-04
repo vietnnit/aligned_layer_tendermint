@@ -47,8 +47,8 @@ var (
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
-		genutiltypes.ModuleName,
 		govtypes.ModuleName,
+		genutiltypes.ModuleName,
 		upgradetypes.ModuleName,
 		// chain modules
 		verifymoduletypes.ModuleName,
@@ -176,12 +176,12 @@ var (
 				Config: appconfig.WrapAny(&verifymodulev1.Module{}),
 			},
 			{
-				Name:   govtypes.ModuleName,
-				Config: appconfig.WrapAny(&govmodulev1.Module{}),
-			},
-			{
 				Name:   upgradetypes.ModuleName,
 				Config: appconfig.WrapAny(&upgrademodulev1.Module{}),
+			},
+			{
+				Name:   govtypes.ModuleName,
+				Config: appconfig.WrapAny(&govmodulev1.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},
