@@ -63,7 +63,6 @@ app.get('/balance/:chain', async (req, res) => {
 app.get('/send/:chain/:address', async (req, res) => {
   const { chain, address } = req.params;
   const ip = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['X-Forwarded-For'] || req.ip
-  console.log('request tokens from', address, ip)
 
   if (!chain && !address) {
     res.send({ result: 'address is required' })
@@ -82,12 +81,12 @@ app.get('/send/:chain/:address', async (req, res) => {
       return
     }
 
-    checker.update(`${chain}${ip}`) // get ::1 on localhost
-    console.log('send tokens to ', address)
+    console.log('send tokens to ', address, ip)
 
     await mutex.runExclusive(async () => {
       await sendTx(address, chain).then(ret => {
         console.log(ret)
+        checker.update(`${chain}${ip}`) // get ::1 on localhost
         checker.update(address)
         res.send({ result: { code: ret.code, tx_hash: ret.transactionHash, height: ret.height } })
       }).catch(err => {
