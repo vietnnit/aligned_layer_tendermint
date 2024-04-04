@@ -5,6 +5,7 @@ import sys
 from slack_sdk import WebhookClient
 
 SLACK_URL = os.environ["SLACK_URL"]
+CHAIN_ID = os.environ.get("CHAIN_ID", "alignedlayer-1")
 
 FAUCET_URL = "http://faucet.alignedlayer.com/"
 
@@ -32,7 +33,7 @@ def get_block_of(url):
 def get_faucet_funds():
     for _ in range(5):
         try:
-            funds = requests.get(FAUCET_URL+"balance/alignedlayer", timeout=5).json()["amount"]
+            funds = requests.get(FAUCET_URL+"balance/"+CHAIN_ID, timeout=5).json()["amount"]
             return funds
         except:
             print("Wainting to check faucet again...")

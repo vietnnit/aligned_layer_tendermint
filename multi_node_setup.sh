@@ -1,5 +1,6 @@
 #!/bin/bash
 
+: "${CHAIN_ID:=alignedlayer-1}"
 : "${PASSWORD:=password}"
 : "${FAUCET_DIR:=./faucet}"
 token="stake"
@@ -24,7 +25,7 @@ node_ids=()
 
 for node in "$@"; do
     echo "Initializing $node..."
-    docker run --rm -v $(pwd)/prod-sim/$node:/root/.alignedlayer -it alignedlayerd_i init alignedlayer_$node --chain-id alignedlayer > /dev/null
+    docker run --rm -v $(pwd)/prod-sim/$node:/root/.alignedlayer -it alignedlayerd_i init alignedlayer_$node --chain-id $CHAIN_ID > /dev/null
     
     docker run --rm -it -v $(pwd)/prod-sim/$node:/root/.alignedlayer --entrypoint sed alignedlayerd_i -i 's/"stake"/"'$token'"/g' /root/.alignedlayer/config/genesis.json 
     docker run --rm -v $(pwd)/prod-sim/$node:/root/.alignedlayer -it alignedlayerd_i config set app minimum-gas-prices "$minimum_gas_price$token"
@@ -66,7 +67,7 @@ done
 
 for (( i=1; i <= "$#"; i++ )); do
     echo "Giving val_${!i} some stake..."
-    echo $PASSWORD | docker run --rm -i -v $(pwd)/prod-sim/${!i}:/root/.alignedlayer alignedlayerd_i genesis gentx val_${!i} $initial_stake$token --keyring-backend file --keyring-dir /root/.alignedlayer/keys --account-number 0 --sequence 0 --chain-id alignedlayer --gas 1000000 --gas-prices $minimum_gas_price$token
+    echo $PASSWORD | docker run --rm -i -v $(pwd)/prod-sim/${!i}:/root/.alignedlayer alignedlayerd_i genesis gentx val_${!i} $initial_stake$token --keyring-backend file --keyring-dir /root/.alignedlayer/keys --account-number 0 --sequence 0 --chain-id $CHAIN_ID --gas 1000000 --gas-prices $minimum_gas_price$token
 
     if [ $i -gt 1 ]; then
         cp prod-sim/${!i}/config/gentx/* prod-sim/$1/config/gentx/

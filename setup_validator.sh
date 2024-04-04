@@ -11,7 +11,7 @@ fi
 
 NODE_HOME=$HOME/.alignedlayer
 CHAIN_BINARY=alignedlayerd
-CHAIN_ID=alignedlayer
+: ${CHAIN_ID:="alignedlayer-1"}
 
 : ${FEES:="50stake"}
 : ${PEER_ADDR:="91.107.239.79"}

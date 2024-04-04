@@ -11,7 +11,7 @@ fi
 
 NODE_HOME=/root/.alignedlayer
 CHAIN_BINARY=alignedlayerd
-CHAIN_ID=alignedlayer
+: ${CHAIN_ID:="alignedlayer-1"}
 
 : ${PASSWORD:="password"}
 : ${FEES:="50stake"}
@@ -20,7 +20,7 @@ CHAIN_ID=alignedlayer
 (echo $PASSWORD; echo $PASSWORD) | $CHAIN_BINARY keys add $VALIDATOR
 ADDRESS=$(echo $PASSWORD | $CHAIN_BINARY keys show $VALIDATOR --address)
 
-until $(curl --output /dev/null --silent --head --fail https://faucet.alignedlayer.com/send/alignedlayer/$ADDRESS); do
+until $(curl --output /dev/null --silent --head --fail https://faucet.alignedlayer.com/send/$CHAIN_ID/$ADDRESS); do
     printf '.'
     sleep 1
 done

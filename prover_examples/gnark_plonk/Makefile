@@ -1,6 +1,7 @@
 .PHONY: prove generate-proof send-proof query-tx clean
 
-CHAIN ?= alignedlayer
+BINARY ?= alignedlayerd
+CHAIN_ID ?= alignedlayer-1
 MODULE ?= verify
 MESSAGE ?= gnark-plonk
 PROVER ?= gnark_plonk.go
@@ -15,14 +16,14 @@ generate-proof:
 	go run gnark_plonk.go
 
 send-proof:
-	$(CHAIN)d tx $(MODULE) $(MESSAGE) \
+	$(BINARY) tx $(MODULE) $(MESSAGE) \
 		$$(cat $(PROOF_FILE)) \
 		$$(cat $(PUBLIC_INPUTS_FILE)) \
 		$$(cat $(VERIFYING_KEY_FILE)) \
-		--from alice --chain-id $(CHAIN) \
+		--from alice --chain-id $(CHAIN_ID) \
 
 query-tx:
-	$(CHAIN)d query tx $(HASH) \
+	$(BINARY) query tx $(HASH) \
 
 clean:
 	rm *.base64
