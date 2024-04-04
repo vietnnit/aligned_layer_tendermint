@@ -74,4 +74,3 @@ clean-ffi:
 
 clean:
 	rm -rf ~/.alignedlayer
-	rm -f $$(which alignedlayerd)
