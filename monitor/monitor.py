@@ -70,6 +70,7 @@ if __name__ == "__main__":
     current_height = [0] * NUMBER_OF_NODES
     alive = [True for i in range(NUMBER_OF_NODES)]
     faucet_ok = True
+    faucet_full = True
 
     for i in range(NUMBER_OF_NODES):
         print("Starting node " + str(i))
@@ -84,13 +85,15 @@ if __name__ == "__main__":
         if faucet_ok and funds=="ERROR":
             send_faucet_alert("The faucet is unreachable.")
             faucet_ok = False
-        elif faucet_ok and int(funds) < FAUCET_MIN_FUNDS:
+        elif faucet_ok and faucet_full and funds!="ERROR" and int(funds) < FAUCET_MIN_FUNDS:
             send_faucet_alert("The faucet has run out of funds. Please refill.")
-            faucet_ok = False
-        elif not faucet_ok and funds!="ERROR" and int(funds)>=FAUCET_MIN_FUNDS:
+            faucet_full = False
+        elif not faucet_ok and funds!="ERROR":
             faucet_ok = True
+            send_faucet_alert("The faucet is back online.")
+        elif faucet_ok and not faucet_full and int(funds)>=FAUCET_MIN_FUNDS:
+            faucet_full = True
             send_faucet_alert("The faucet has been successfully refilled.")
-            
 
         for i in range(NUMBER_OF_NODES):
             current_height[i], timestamp = get_block_of(urls[i])
