@@ -1,6 +1,6 @@
 use std::panic::catch_unwind;
 
-use sp1_core::SP1Verifier;
+use sp1_sdk::SP1Verifier;
 
 #[no_mangle]
 pub extern "C" fn verify_sp1_proof_with_elf_ffi(
