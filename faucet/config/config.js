@@ -35,7 +35,7 @@ export default {
                 amount: [
                     {
                         denom: "stake",
-                        amount: "1100000"
+                        amount: "100000"
                     },
                 ],
                 fee: {
@@ -53,7 +53,7 @@ export default {
                 address: 1,
                 // how many times each ip is allowed in a window(24h),
                 // if you use proxy, double check if the req.ip is return client's ip.
-                ip: 1
+                ip: 5
             }
         },
     ]    
