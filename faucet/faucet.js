@@ -7,6 +7,9 @@ import conf from './config/config.js'
 import { FrequencyChecker } from './checker.js';
 
 import { Mutex, withTimeout, E_TIMEOUT } from 'async-mutex';
+import bodyParser from "express";
+
+import 'dotenv/config';
 
 // load config
 console.log("loaded config: ", conf)
@@ -16,6 +19,9 @@ const mutex = withTimeout(new Mutex(), 10000);
 const app = express()
 app.enable("trust proxy")
 app.set("view engine", "ejs");
+app.use(bodyParser.json({
+  limit: '1mb'
+}));
 
 const checker = new FrequencyChecker(conf)
 
@@ -60,13 +66,18 @@ app.get('/balance/:chain', async (req, res) => {
   res.send(balance);
 })
 
-app.get('/send/:chain/:address', async (req, res) => {
+app.post('/send/:chain/:address', async (req, res) => {
   const { chain, address } = req.params;
   const ip = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['X-Forwarded-For'] || req.ip
+  const recaptcha = req.body.recaptcha
 
   if (!chain && !address) {
     res.send({ result: 'address is required' })
     return
+  }
+
+  if (!recaptcha || !await validateRecaptcha(recaptcha)) {
+    return res.status(400).send({ result: 'Captcha is not valid' })
   }
 
   try {
@@ -127,4 +138,12 @@ async function sendTx(recipient, chain) {
   let response = client.sendTokens(firstAccount.address, recipient, amount, fee)
   console.log(response)
   return response;
+}
+
+async function validateRecaptcha(recaptcha) {
+  const secret = process.env.RECAPTCHA_SECRET
+  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${recaptcha}`
+  const response = await fetch(url, { method: 'POST' })
+  const data = await response.json()
+  return data.success
 }

@@ -11,18 +11,30 @@
   <meta name=”robots” content="index, follow">
   <meta name="description" content="Uniform Faucet Tool For Cosmos SDK Blockchains - Powered By Ping.pub">
   <meta>
-</head>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-  integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-</head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
+  <!--  Google Recaptcha -->
+  <script type="text/javascript">
+    var verifyCallback = function(response) {
+      localStorage.setItem("recaptcha", response);
+    };
+    var onloadCallback = function() {
+      grecaptcha.render('recaptcha', {
+        'sitekey' : '<%= process.env.RECAPTCHA_PUBLIC %>',
+        'callback' : verifyCallback,
+        'theme' : 'light'
+      });
+    };
+  </script>
+</head>
 <body>
   <div id="app">
     <main class="container-md">
       <div class="py-5 text-center">
         <img id="logo" class="d-block mx-auto mb-4" style="max-width: 25px;"
           src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟩</text></svg>"
-          :alt="`${testnet} Faucet`">
+          alt="`${testnet} Faucet`">
         <h1>
           <%= project.name %>
         </h1>
@@ -39,14 +51,19 @@
             </select>
           </span>
           <input id="address" class="form-control" :placeholder="placeholder" v-model="address" name="address">
-          <button type="button" class="btn btn-secondary d-flex flex-row " @click="requestToken(this)">
+        </div>
+
+        <div id="recaptcha"></div>
+        <button type="button" class="btn btn-secondary" @click="requestToken(this)">
             <span>
               <span id="button-loading" class="spinner-border spinner-border-sm mt-1 mr-1" style="display:none"
-                role="status" aria-hidden="true"></span>
+                    role="status" aria-hidden="true"></span>
             </span>
-            <span class="sr-only">Request Tokens</span>
-          </button>
-        </div>
+          <span class="sr-only">Request Tokens</span>
+        </button>
+        <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+                async defer>
+        </script>
       </div>
 
       <div id="message" v-html="message"></div>
@@ -103,12 +120,20 @@
           })
         },
         requestToken(obj) {
+          const recaptcha = localStorage.getItem("recaptcha");
           if (this.address) {
             // button state
             obj.disabled = true
             document.getElementById("button-loading").style.display = 'block';
 
-            fetch(`/send/${this.chain}/${this.address}`).then(response => response.json()).then(data => {
+            fetch(`/send/${this.chain}/${this.address}`, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ recaptcha: recaptcha }),
+            }).then(response => response.json()).then(data => {
               obj.disabled = false
               document.getElementById("button-loading").style.display = 'none';
               this.message = `
@@ -125,12 +150,6 @@
         }
       }
     }).mount('#app')
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
-    crossorigin="anonymous"></script>
-  <script>
   </script>
 </body>
 
