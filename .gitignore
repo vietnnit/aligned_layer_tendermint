@@ -10,3 +10,4 @@ release/
 prod-sim/
 server-setup/
 prover_examples/gnark_plonk/*.base64
+.env
