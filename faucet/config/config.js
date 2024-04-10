@@ -7,9 +7,6 @@ const mnemonic_path= `${HOME}/mnemonic.txt`
 
 const path = stringToPath("m/44'/118'/0'/0/0")
 const mnemonic = fs.readFileSync(mnemonic_path, "utf8").trim()
-console.log("======================== faucet mnemonic =========================")
-console.log(mnemonic)
-console.log("==================================================================")
 
 export default {
     port: 8088, // http port 
