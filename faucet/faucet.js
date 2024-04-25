@@ -92,11 +92,9 @@ app.post('/send/:chain/:address', async (req, res) => {
       return
     }
 
-    console.log('send tokens to ', address, ip)
-
     await mutex.runExclusive(async () => {
       await sendTx(address, chain).then(ret => {
-        console.log(ret)
+        console.log('send tokens to ', address, ip)
         checker.update(`${chain}${ip}`) // get ::1 on localhost
         checker.update(address)
         res.send({ result: { code: ret.code, tx_hash: ret.transactionHash, height: ret.height } })
