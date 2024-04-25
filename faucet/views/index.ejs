@@ -15,22 +15,7 @@
     integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
   <!--  Google Recaptcha -->
-  <script type="text/javascript">
-    var verifyCallback = function(response) {
-      localStorage.setItem("recaptcha", response);
-    };
-    var onloadCallback = function() {
-      grecaptcha.render('recaptcha', {
-        'sitekey' : '<%= process.env.RECAPTCHA_PUBLIC %>',
-        'callback' : verifyCallback,
-        'theme' : 'light'
-      });
-    };
-  </script>
-  <div id="recaptcha" class="p-2 d-flex justify-content-center"></div>
-  <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
-          async defer>
-  </script>
+  <script src="https://www.google.com/recaptcha/enterprise.js?render=6Le3Q8cpAAAAAG-bWQRiAFh53NCy9Er48aKHJ1lf"></script>
 </head>
 <body>
   <div id="app">
@@ -57,17 +42,13 @@
           <input id="address" class="form-control" :placeholder="placeholder" v-model="address" name="address">
         </div>
 
-        <div id="recaptcha"></div>
-        <button type="button" class="btn btn-secondary" @click="requestToken(this)">
+        <button type="button" class="btn btn-secondary" @click="requestToken" id="request-tokens-button">
             <span>
               <span id="button-loading" class="spinner-border spinner-border-sm mt-1 mr-1" style="display:none"
                     role="status" aria-hidden="true"></span>
             </span>
           <span class="sr-only">Request Tokens</span>
         </button>
-        <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
-                async defer>
-        </script>
       </div>
 
       <div id="message" v-html="message"></div>
@@ -123,34 +104,45 @@
             this.balance = balance
           })
         },
-        requestToken(obj) {
-          const recaptcha = localStorage.getItem("recaptcha");
-          if (this.address) {
-            // button state
-            obj.disabled = true
-            document.getElementById("button-loading").style.display = 'block';
+        requestToken(e) {
 
-            fetch(`/send/${this.chain}/${this.address}`, {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ recaptcha: recaptcha }),
-            }).then(response => response.json()).then(data => {
-              obj.disabled = false
-              document.getElementById("button-loading").style.display = 'none';
-              this.message = `
+          this.getCaptcha(e).then(token => {
+            if (this.address) {
+              // button state
+              document.getElementById("request-tokens-button").disabled = true;
+              document.getElementById("button-loading").style.display = 'block';
+
+              fetch(`/send/${this.chain}/${this.address}`, {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ recaptcha: token }),
+              }).then(response => response.json()).then(data => {
+                document.getElementById("request-tokens-button").disabled = false;
+                document.getElementById("button-loading").style.display = 'none';
+                this.message = `
                   <div class="alert alert-${data.result.code === 0 ? 'success' : 'danger'} alert-dismissible show fade mt-2" role="alert">
                       <li>${data.result.code === 0 ? 'Tokens sent' : 'Request failed'}</li>
                       <textarea class="form-control mt-1" rows="5" style="background-color:transparent">${JSON.stringify(data, null, 2)}</textarea>
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                   `
+              });
+            } else {
+              this.message = '<span class="text-danger">Address is required</span>'
+            }
+          });
+        },
+        getCaptcha(e) {
+          e.preventDefault();
+          return new Promise((resolve, reject) => {
+            grecaptcha.enterprise.ready(async () => {
+              const token = await grecaptcha.enterprise.execute('<%= process.env.RECAPTCHA_PUBLIC %>', {action: 'token'});
+              resolve(token)
             });
-          } else {
-            this.message = '<span class="text-danger">Address is required</span>'
-          }
+          });
         }
       }
     }).mount('#app')

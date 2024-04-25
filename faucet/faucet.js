@@ -14,6 +14,8 @@ import 'dotenv/config';
 // load config
 console.log("loaded config: ", conf)
 
+const RECAPTCHA_ACTION = 'token'
+
 const mutex = withTimeout(new Mutex(), 60000);
 
 const app = express()
@@ -103,7 +105,7 @@ app.post('/send/:chain/:address', async (req, res) => {
       });
     });
   } catch (err) {
-    console.error(err.message);
+    console.error(err.message, address, ip);
 
     if (err == E_TIMEOUT) {
       return res.status(500).send({ result: 'Faucet is busy, Please try again later.' })
@@ -141,5 +143,5 @@ async function validateRecaptcha(recaptcha) {
   const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${recaptcha}`
   const response = await fetch(url, { method: 'POST' })
   const data = await response.json()
-  return data.success
+  return data.success && data.action === RECAPTCHA_ACTION && data.score > 0.8
 }
