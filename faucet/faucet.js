@@ -14,7 +14,7 @@ import 'dotenv/config';
 // load config
 console.log("loaded config: ", conf)
 
-const mutex = withTimeout(new Mutex(), 10000);
+const mutex = withTimeout(new Mutex(), 60000);
 
 const app = express()
 app.enable("trust proxy")
@@ -103,7 +103,7 @@ app.post('/send/:chain/:address', async (req, res) => {
       });
     });
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
 
     if (err == E_TIMEOUT) {
       return res.status(500).send({ result: 'Faucet is busy, Please try again later.' })
