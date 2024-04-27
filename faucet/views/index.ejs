@@ -20,7 +20,7 @@
     // onload.js
 
     const getToken = async (code) => {
-      const result = await fetch('http://localhost:3000/getToken', {
+      const result = await fetch('https://faucet.alignedlayer.com/getToken', {
         method: 'POST',
         body: JSON.stringify({ code }),
         headers: {
@@ -35,7 +35,7 @@
     }
 
     const getMe = async (tokenType, accessToken) => {
-      const result = await fetch('http://localhost:3000/p/getMe', {
+      const result = await fetch('https://faucet.alignedlayer.com/p/getMe', {
         headers: {
           authorization: `${accessToken}`,
         },
