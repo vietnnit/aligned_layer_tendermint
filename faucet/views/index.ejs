@@ -16,6 +16,71 @@
 
   <!--  Google Recaptcha -->
   <script src="https://www.google.com/recaptcha/enterprise.js?render=6Le3Q8cpAAAAAG-bWQRiAFh53NCy9Er48aKHJ1lf"></script>
+  <script>
+    // onload.js
+
+    const getToken = async (code) => {
+      const result = await fetch('http://localhost:3000/getToken', {
+        method: 'POST',
+        body: JSON.stringify({ code }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const resultJson = await result.json()
+      window.localStorage.setItem("access_token", resultJson.access_token)
+      window.localStorage.setItem("token_type", resultJson.token_type)
+      return resultJson
+    }
+
+    const getMe = async (tokenType, accessToken) => {
+      const result = await fetch('http://localhost:3000/p/getMe', {
+        headers: {
+          authorization: `${accessToken}`,
+        },
+      })
+
+      const resultJson = await result.json()
+      const { username, id } = resultJson;
+      document.getElementById('info').innerText = `Logged in as: ${username} (id: ${id})`;
+      return resultJson
+    }
+
+    window.onload = async () => {
+      const accessToken = window.localStorage.getItem("access_token")
+
+      const tokenType = window.localStorage.getItem("token_type")
+
+      // get code from URL
+      const fragment = new URLSearchParams(window.location.search);
+      const code = fragment.get('code')
+      console.log(code)
+
+      if (!code && !accessToken) {
+        // if no code and no token (not logged in),
+        // show button "Login with Discord"
+        document.getElementById('login').style.display = `block`;
+        return
+      }
+
+      if (code) {
+        // if there is code but no token (code not yet exchanged),
+        // exchange code for tokens and save tokens in localStorage
+        window.history.replaceState({}, document.title, "/");  // set url to "/"
+        const result = await getToken(code)
+        console.log(result)
+        if (result.token_type && result.access_token) {
+          window.localStorage.setItem("token_type", result.token_type)
+          window.localStorage.setItem("access_token", result.access_token)
+        }
+      }
+      if (accessToken) {
+        // if token exists, just get the user info
+        await getMe(tokenType, accessToken)
+      }
+    }
+  </script>
 </head>
 <body>
   <div id="app">
@@ -42,6 +107,11 @@
           <input id="address" class="form-control" :placeholder="placeholder" v-model="address" name="address">
         </div>
 
+        <a class="btn btn-primary mt-4" id="login" href="https://discord.com/oauth2/authorize?client_id=1233546823898108085&response_type=code&redirect_uri=https%3A%2F%2Ffaucet.alignedlayer.com&scope=identify+guilds">
+          Discord Login
+        </a>
+        <p class="m-2" id="info"></p>
+
         <button type="button" class="btn btn-secondary" @click="requestToken" id="request-tokens-button">
             <span>
               <span id="button-loading" class="spinner-border spinner-border-sm mt-1 mr-1" style="display:none"
@@ -51,8 +121,9 @@
         </button>
       </div>
 
-      <div id="message" v-html="message"></div>
 
+
+      <div id="message" v-html="message"></div>
     </main>
 
     <footer class="my-5 pt-5 text-muted text-center text-small">
@@ -118,7 +189,7 @@
                   'Accept': 'application/json',
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ recaptcha: token }),
+                body: JSON.stringify({ recaptcha: token, discord_token: window.localStorage.getItem("access_token") })
               }).then(response => response.json()).then(data => {
                 document.getElementById("request-tokens-button").disabled = false;
                 document.getElementById("button-loading").style.display = 'none';
@@ -143,6 +214,20 @@
               resolve(token)
             });
           });
+        },
+        async getToken(code) {
+          const result = await fetch('http://localhost:3000/getToken', {
+            method: 'POST',
+            body: JSON.stringify({ code }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+
+          const resultJson = await result.json()
+          window.localStorage.setItem("access_token", resultJson.access_token)
+          window.localStorage.setItem("token_type", resultJson.token_type)
+          return resultJson
         }
       }
     }).mount('#app')

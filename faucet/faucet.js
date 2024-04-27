@@ -1,13 +1,13 @@
 import express from 'express';
+import bodyParser from 'express';
 
-import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { SigningStargateClient } from "@cosmjs/stargate";
+import {DirectSecp256k1HdWallet} from "@cosmjs/proto-signing";
+import {SigningStargateClient} from "@cosmjs/stargate";
 
 import conf from './config/config.js'
-import { FrequencyChecker } from './checker.js';
+import {FrequencyChecker} from './checker.js';
 
-import { Mutex, withTimeout, E_TIMEOUT } from 'async-mutex';
-import bodyParser from "express";
+import {Mutex, withTimeout} from 'async-mutex';
 
 import 'dotenv/config';
 
@@ -72,6 +72,7 @@ app.post('/send/:chain/:address', async (req, res) => {
   const { chain, address } = req.params;
   const ip = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['X-Forwarded-For'] || req.ip
   const recaptcha = req.body.recaptcha
+  const discord_token = req.body.discord_token
 
   if (!chain && !address) {
     res.send({ result: 'address is required' })
@@ -81,6 +82,10 @@ app.post('/send/:chain/:address', async (req, res) => {
   if (!recaptcha || !await validateRecaptcha(recaptcha)) {
     return res.status(400).send({ result: 'Captcha is not valid' })
   }
+  const discord_user = await getDiscordUser(discord_token)
+  if (!discord_token || !discord_user || !await belongsToServer(discord_token)) {
+    return res.status(400).send({ result: 'You are not a member of the server' })
+  }
 
   try {
     const chainConf = conf.blockchains.find(x => x.name === chain)
@@ -89,10 +94,17 @@ app.post('/send/:chain/:address', async (req, res) => {
       return
     }
 
-    if (!await checker.checkAddress(address, chain) || !await checker.checkIp(`${chain}${ip}`, chain)) {
+    if (!await checker.checkAddress(address, chain) ||
+        !await checker.checkIp(`${chain}${ip}`, chain) ||
+        !await checker.checkDiscord(discord_user.id, chain)) {
       res.status(429).send({ result: "You requested too often" })
       return
     }
+
+    await checker.update(`${chain}${ip}`) // get ::1 on localhost
+    await checker.update(address)
+    await checker.update(discord_user.id)
+    res.send({ result: 'success' })
 
     await mutex.runExclusive(async () => {
       await sendTx(address, chain).then(ret => {
@@ -113,6 +125,32 @@ app.post('/send/:chain/:address', async (req, res) => {
     res.status(500).send({ result: 'Failed, Please contact to admin.' })
   }
 })
+
+app.post('/getToken', async (req, res) => {
+  const tokenResponseData = await fetch('https://discord.com/api/oauth2/token', {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID,
+      client_secret: process.env.DISCORD_CLIENT_SECRET,
+      code: req.body.code,
+      grant_type: 'authorization_code',
+      redirect_uri: process.env.FRONTEND_URL,
+      scope: 'identify',
+    }).toString(),
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
+  const oauthData = await tokenResponseData.json();
+  console.log(oauthData)
+  return res.json(oauthData)
+});
+
+app.get("/p/getMe", async (req, res) => {
+  const authString = req.headers.authorization
+  const user = await getDiscordUser(authString)
+  res.json(user)
+});
 
 app.listen(conf.port, () => {
   console.log(`Faucet app listening on port ${conf.port}`)
@@ -144,4 +182,34 @@ async function validateRecaptcha(recaptcha) {
   const response = await fetch(url, { method: 'POST' })
   const data = await response.json()
   return data.success && data.action === RECAPTCHA_ACTION && data.score > 0.8
+}
+
+async function belongsToServer(discord_token) {
+  try {
+    const response = await fetch('https://discord.com/api/users/@me/guilds', {
+      headers: {
+        authorization: `Bearer ${discord_token}`,
+      },
+    });
+    const data = await response.json()
+    console.log(data)
+    return data.some(guild => guild.id === process.env.ALIGNED_SERVER_ID)
+  } catch (err) {
+    return false
+  }
+}
+
+async function getDiscordUser(discord_token) {
+  try {
+    const response = await fetch('https://discord.com/api/users/@me', {
+      headers: {
+        authorization: `Bearer ${discord_token}`,
+      },
+    });
+    const data = await response.json()
+    const {id, username} = data;
+    return {id, username}
+  } catch (err) {
+    return null
+  }
 }

@@ -34,6 +34,11 @@ export class FrequencyChecker {
         return chainLimit ? this.check(address, chainLimit.limit.address ) : Promise.resolve(false)
     }
 
+    async checkDiscord(user, chain) {
+        const chainLimit = this.conf.blockchains.find(x => x.name === chain)
+        return chainLimit ? this.check(user, chainLimit.limit.discord ) : Promise.resolve(false)
+    }
+
     async update(key) {
         const db = this.db
         db.get(key, function (err, history) {
