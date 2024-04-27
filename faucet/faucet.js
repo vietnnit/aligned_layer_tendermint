@@ -191,7 +191,6 @@ async function belongsToServer(discord_token) {
       },
     });
     const data = await response.json()
-    console.log(data)
     return data.some(guild => guild.id === process.env.ALIGNED_SERVER_ID)
   } catch (err) {
     return false
