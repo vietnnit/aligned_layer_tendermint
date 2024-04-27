@@ -104,7 +104,6 @@ app.post('/send/:chain/:address', async (req, res) => {
     await checker.update(`${chain}${ip}`) // get ::1 on localhost
     await checker.update(address)
     await checker.update(discord_user.id)
-    res.send({ result: 'success' })
 
     await mutex.runExclusive(async () => {
       await sendTx(address, chain).then(ret => {
