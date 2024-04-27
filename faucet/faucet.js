@@ -107,7 +107,7 @@ app.post('/send/:chain/:address', async (req, res) => {
 
     await mutex.runExclusive(async () => {
       await sendTx(address, chain).then(ret => {
-        console.log('send tokens to ', address, ip)
+        console.log('send tokens to ', address, ip, discord_user)
         checker.update(`${chain}${ip}`) // get ::1 on localhost
         checker.update(address)
         res.send({ result: { code: ret.code, tx_hash: ret.transactionHash, height: ret.height } })
@@ -141,7 +141,6 @@ app.post('/getToken', async (req, res) => {
     },
   });
   const oauthData = await tokenResponseData.json();
-  console.log(oauthData)
   return res.json(oauthData)
 });
 
